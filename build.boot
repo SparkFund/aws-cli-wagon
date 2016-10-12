@@ -12,10 +12,18 @@
 
 (task-options!
  pom {:project 'sparkfund/aws-cli-wagon
-      :version "1.0.0"}
+      :version version}
  aot {:namespace '[sparkfund.maven.wagon.aws-cli]}
  jar {:file "aws-cli-wagon.jar"})
 
 (deftask build
   []
-  (comp (aot) (pom) (jar) (target)))
+  (comp (aot) (build-jar) (target)))
+
+(deftask snapshot
+  []
+  (comp (aot) (build-jar) (push-snapshot)))
+
+(deftask release
+  []
+  (comp (aot) (build-jar) (push-release)))

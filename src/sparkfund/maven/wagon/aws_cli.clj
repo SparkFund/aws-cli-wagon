@@ -32,7 +32,7 @@
         result (shell/sh "aws" "s3" "cp" source-path destination-path)
         {:keys [exit out err]} result]
     (when (pos? exit)
-      (let [ex (condp re-matches err
+      (let [ex (condp re-find err
                  #"Unable to locate credentials"
                  (AuthorizationException. err)
                  #"404"
@@ -55,5 +55,30 @@
   (throw (Exception. "Not yet supported")))
 
 (defn -put
-  [this source destination]
-  (throw (Exception. "Not yet supported")))
+  [this source resource-name]
+  (let [repository (.getRepository this)
+        bucket (.getHost repository)
+        root (.getBasedir repository)
+        source-path (.getAbsolutePath source)
+        destination-path (format "s3://%s%s%s" bucket root resource-name)
+        resource (Resource. resource-name)
+        _ (.firePutInitiated this resource source)
+        _ (.firePutStarted this resource source)
+        result (shell/sh "aws" "s3" "cp" source-path destination-path)
+        {:keys [exit out err]} result]
+    (when (pos? exit)
+      (let [ex (condp re-find err
+                 #"Unable to locate credentials"
+                 (AuthorizationException. err)
+                 #"404"
+                 (ResourceDoesNotExistException. err)
+                 (TransferFailedException. err))]
+        (throw ex)))
+    (let [transfer-event (TransferEvent. this resource
+                                         TransferEvent/TRANSFER_PROGRESS
+                                         TransferEvent/REQUEST_PUT)
+          bytes (byte-array (.length source))]
+      (with-open [input (FileInputStream. source)]
+        (.read input bytes))
+      (.fireTransferProgress this transfer-event bytes (count bytes)))
+    (.firePutCompleted this resource source)))

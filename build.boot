@@ -1,10 +1,10 @@
-(def version "1.0.0")
-
 (set-env!
  :source-paths #{"src"}
  :resource-paths #{"resources"}
  :dependencies '[[adzerk/bootlaces "0.1.13" :scope "build"]
                  [org.apache.maven.wagon/wagon-provider-api "2.4"]])
+
+(def version "1.0.1")
 
 (require '[adzerk.bootlaces :refer :all])
 

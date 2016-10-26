@@ -21,4 +21,4 @@ Rather than continue to play whack-a-mole trying to resolve version mismatches, 
 
 ## Limitations
 
-This doesn't yet support get-if-newer or putting resources. We anticipate supporting them shortly.
+This doesn't yet support get-if-newer. It's not clear that it's actually used, but wouldn't be hard to add if there is a use case.

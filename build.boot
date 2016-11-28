@@ -4,7 +4,7 @@
  :dependencies '[[adzerk/bootlaces "0.1.13" :scope "build"]
                  [org.apache.maven.wagon/wagon-provider-api "2.4"]])
 
-(def version "1.0.1")
+(def version "1.0.2-SNAPSHOT")
 
 (require '[adzerk.bootlaces :refer :all])
 
@@ -19,6 +19,10 @@
 (deftask build
   []
   (comp (aot) (build-jar) (target)))
+
+(deftask local-install
+  []
+  (comp (pom) (aot) (build-jar) (install)))
 
 (deftask snapshot
   []

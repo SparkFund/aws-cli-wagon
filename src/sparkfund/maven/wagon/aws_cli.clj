@@ -1,23 +1,63 @@
 (ns sparkfund.maven.wagon.aws-cli
-  (:require [clojure.java.shell :as shell])
+  (:require [clojure.java.shell :as shell]
+            [clojure.string :as string])
   (:import
    [java.io FileInputStream]
+   [java.util UUID]
    [org.apache.maven.wagon.resource Resource]
    [org.apache.maven.wagon.events TransferEvent]
    [org.apache.maven.wagon ResourceDoesNotExistException TransferFailedException]
    [org.apache.maven.wagon.authorization AuthorizationException])
   (:gen-class
    :extends org.apache.maven.wagon.AbstractWagon
-   :init init))
+   :init init
+   :state state))
+
+(defn obtain-role-env
+  "Obtains temporary credentials for the given role. This return a map of
+   environment variables suitable for use by `clojure.java.shell/sh`"
+  [role]
+  (let [session (str (UUID/randomUUID))
+        query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"
+        result (shell/sh "aws" "sts" "assume-role"
+                         "--profile" "default"
+                         "--role-arn" role
+                         "--role-session-name" session
+                         "--duration-seconds" "900"
+                         "--query" query
+                         "--output" "text")
+        {:keys [exit out err]} result
+        xs (when (zero? exit)
+             (string/split (string/trimr out) #"\t"))
+        [access-key-id secret-access-key token] xs]
+    (when-not (= 3 (count xs))
+      (throw (ex-info "Invalid sts response" {:out out})))
+    {"AWS_ACCESS_KEY_ID" access-key-id
+     "AWS_SECRET_ACCESS_KEY" secret-access-key
+     "AWS_SESSION_TOKEN" token
+     "AWS_SECURITY_TOKEN" token
+     "AWS_DEFAULT_PROFILE" "default"
+     "AWS_PROFILE" "default"}))
 
 (defn -init []
-  [[]])
+  (let [role (System/getenv "AWS_CLI_MAVEN_ROLE")
+        state (when role (obtain-role-env role))]
+    [[] state]))
 
 (defn -closeConnection
   [this])
 
 (defn -openConnectionInternal
   [this])
+
+(defn exec
+  "Executes the given command in the environment context of the given wagon"
+  [this & args]
+  (let [env (.state this)
+        args (cond-> (into [] args)
+               (seq env)
+               (into [:env env]))]
+    (apply shell/sh args)))
 
 (defn -get
   [this resource-name destination]
@@ -29,7 +69,7 @@
         resource (Resource. resource-name)
         _ (.fireGetInitiated this resource destination)
         _ (.fireGetStarted this resource destination)
-        result (shell/sh "aws" "s3" "cp" source-path destination-path)
+        result (exec this "aws" "s3" "cp" source-path destination-path)
         {:keys [exit out err]} result]
     (when (pos? exit)
       (let [ex (condp re-find err
@@ -64,7 +104,7 @@
         resource (Resource. resource-name)
         _ (.firePutInitiated this resource source)
         _ (.firePutStarted this resource source)
-        result (shell/sh "aws" "s3" "cp" source-path destination-path)
+        result (exec this "aws" "s3" "cp" source-path destination-path)
         {:keys [exit out err]} result]
     (when (pos? exit)
       (let [ex (condp re-find err

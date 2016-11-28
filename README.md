@@ -8,9 +8,15 @@ For boot:
 
 ``` clojure
 (set-env!
- :wagons '[[sparkfund/aws-cli-wagon "1.0.0"]]
+ :wagons '[[sparkfund/aws-cli-wagon "1.0.2"]]
  :repositories
  #(conj % '["private {:url "s3p://bucket-name/releases/"}]))
+```
+
+When the AWS user of the process has permission to the s3 bucket in question, no further configuration is required. When the AWS user needs to assume a role, the role ARN must be specified in an environment variable:
+
+``` shell
+export AWS_CLI_MAVEN_ROLE=arn:aws:iam::12356789012:role/maven
 ```
 
 ## Motivation

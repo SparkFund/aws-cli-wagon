@@ -4,7 +4,7 @@
  :dependencies '[[adzerk/bootlaces "0.1.13" :scope "build"]
                  [org.apache.maven.wagon/wagon-provider-api "2.4"]])
 
-(def version "1.0.2")
+(def version "1.0.3")
 
 (require '[adzerk.bootlaces :refer :all])
 

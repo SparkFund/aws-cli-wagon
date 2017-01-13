@@ -1,3 +1,7 @@
+# 1.0.3
+
+* Add resourceExists method
+
 # 1.0.2
 
 * Add support for assuming a role

@@ -94,6 +94,20 @@
   ;; even doing the whole thing with get-object
   (throw (Exception. "Not yet supported")))
 
+(defn -resourceExists
+  [this resource-name]
+  (let [repository (.getRepository this)
+        bucket (.getHost repository)
+        root (.getBasedir repository)
+        source-path (format "s3://%s%s%s" bucket root resource-name)
+        result (exec this "aws" "s3" "ls" source-path)
+        {:keys [exit out err]} result]
+    (case exit
+      0 true
+      1 false
+      255 (throw (AuthorizationException. err))
+      (throw (TransferFailedException. err)))))
+
 (defn -put
   [this source resource-name]
   (let [repository (.getRepository this)

@@ -1,3 +1,7 @@
+# 1.0.4
+
+* Do not explicitly set aws profile when manually obtaining sts credentials
+
 # 1.0.3
 
 * Add resourceExists method

@@ -20,7 +20,8 @@
   (let [session (str (UUID/randomUUID))
         query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"
         result (shell/sh "aws" "sts" "assume-role"
-                         "--profile" "default"
+                         ;; TODO possibly explicitly infer this
+                         ;; "--profile" "default"
                          "--role-arn" role
                          "--role-session-name" session
                          "--duration-seconds" "900"
@@ -36,8 +37,10 @@
      "AWS_SECRET_ACCESS_KEY" secret-access-key
      "AWS_SESSION_TOKEN" token
      "AWS_SECURITY_TOKEN" token
-     "AWS_DEFAULT_PROFILE" "default"
-     "AWS_PROFILE" "default"}))
+     ;; TODO possibly discover these from the outerlying env
+     ;; "AWS_DEFAULT_PROFILE" "default"
+     ;; "AWS_PROFILE" "default"
+     }))
 
 (defn -init []
   (let [role (System/getenv "AWS_CLI_MAVEN_ROLE")

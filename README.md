@@ -10,7 +10,7 @@ For boot:
 (set-env!
  :wagons '[[sparkfund/aws-cli-wagon "1.0.4"]]
  :repositories
- #(conj % '["private" {:url "s3p://bucket-name/releases/"}]))
+ #(conj % '["releases" {:url "s3p://bucket-name/releases/"}]))
 ```
 
 For leiningen:

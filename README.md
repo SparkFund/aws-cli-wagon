@@ -10,7 +10,7 @@ For boot:
 (set-env!
  :wagons '[[sparkfund/aws-cli-wagon "1.0.4"]]
  :repositories
- #(conj % '["private {:url "s3p://bucket-name/releases/"}]))
+ #(conj % '["private" {:url "s3p://bucket-name/releases/"}]))
 ```
 
 For leiningen:
@@ -18,7 +18,7 @@ For leiningen:
 ``` clojure
 (defproject ...
  :plugins [[sparkfund/aws-cli-wagon "1.0.4"]]
- :repositories [["releases" "s3p://sparkfund-maven/releases/"]])
+ :repositories [["releases" "s3p://bucket-name/releases/"]])
 ```
 
 When the AWS user of the process has permission to the s3 bucket in question, no further configuration is required. When the AWS user needs to assume a role, the role ARN must be specified in an environment variable:
